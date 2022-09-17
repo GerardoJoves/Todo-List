@@ -3,6 +3,7 @@ import { html, render } from 'lit-html';
 import { createRef, ref } from 'lit-html/directives/ref.js'
 import { Project } from './project';
 import { Task } from './task';
+import { events } from './events';
 
 const projectDisplay = document.querySelector('#project-display');
 
@@ -22,8 +23,7 @@ function addTaskHandler(e) {
         dueDate: 'empty',
         priority: 'empty',
     }))
-
-    render(projectTemplate(currentProject), projectDisplay);
+    events.emit('newTaskAdded', {project: currentProject});
 }
 
 function taskInputTemplate(inputObj) {
@@ -77,6 +77,8 @@ function taskTemplate({title, description, dueDate}) {
     `
 }
 
-
+events.on('newTaskAdded', () => {
+    render(projectTemplate(currentProject), projectDisplay);
+})
 
 render(projectTemplate(currentProject), projectDisplay);
