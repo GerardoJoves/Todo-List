@@ -12,9 +12,6 @@ module.exports = merge(common, {
             }
         ],
     },
-    devServer: {
-        statis: './dist',
-    },
     optimization: {
         runtimeChunk: 'single',
     },

@@ -1,84 +1,56 @@
 import './styles.css';
-import { html, render } from 'lit-html';
-import { createRef, ref } from 'lit-html/directives/ref.js'
+import { render } from 'lit-html';
 import { Project } from './project';
 import { Task } from './task';
 import { events } from './events';
+import { projectTemplate, leftMenuTemplate } from './templates';
 
-const projectDisplay = document.querySelector('#project-display');
+const projectDisplayContainer = document.querySelector('#project-display');
+const hamburgerMenuIcon = document.querySelector('#hamburger-menu-icon');
+const leftMenu = document.querySelector('#left-menu');
 
-let currentProject = new Project({
-    title: 'Index'
-});
-
-const taskInput = {
-    titleRef: createRef(),
-    descriptionRef: createRef(),
-}
-
-function addTaskHandler(e) {
-    currentProject.addTask(new Task({
-        title: taskInput.titleRef.value.value,
-        description: taskInput.descriptionRef.value.value,
-        dueDate: 'empty',
-        priority: 'empty',
-    }))
-    events.emit('newTaskAdded', {project: currentProject});
-}
-
-function taskInputTemplate(inputObj) {
-    return html`
-        <div>
-            <div>
-                <label>Title</label>
-                <input ${ref(inputObj.titleRef)} tyep="text" />
-            </div>
-            <div>
-                <label>Description</div>
-                <input ${ref(inputObj.descriptionRef)} type="text" />
-            </div>
-            <div>
-                <button @click=${addTaskHandler} type="button" >Add Task</button>
-            </div>
-        </div>
-    `
-}
-
-function projectTemplate({tasks, title}) {
-    return html`
-        <div>
-            <h1>${title}</h1>
-            <ul>
-                ${tasks.map(task => taskTemplate(task))}
-                <li>${taskInputTemplate(taskInput)}</li>
-            </ul>
-        </div>
-    `
-}
-
-function taskTemplate({title, description, dueDate}) {
-    return html`
-        <li>
-            <div>
-                <button class="task-checkbox" type="button"></button>
-            </div>
-            <div>
-                <div>
-                    <div class="task-title">${title}</div>
-                </div>
-                <div>
-                    <div>${description}</div>
-                </div>
-                <div>
-                    <div>${dueDate}</div>
-                </div>
-            </div>
-        </li>
-    `
-}
-
-events.on('newTaskAdded', () => {
-    render(projectTemplate(currentProject), projectDisplay);
+hamburgerMenuIcon.addEventListener('click', function() {
+    leftMenu.classList.toggle('hidden')
 })
 
-render(projectTemplate(currentProject), projectDisplay);
+const projects = (function() {
+    const index = new Project({
+        title: 'Index'
+    });
+
+    const builtIn = [index];
+    const custom = [];
+
+    function addCustomProject(project) {
+        custom.push(project)
+    }
+
+    return {
+        currentProjectOnDisplay: index,
+        get builtIn() {
+            return [...builtIn]
+        },
+        get custom() {
+            return [...custom]
+        },
+        addCustomProject,
+    }
+})();
+
+events.on('addTask', (taskInfo) => {
+    projects.currentProjectOnDisplay.addTask(new Task(taskInfo))
+    render(projectTemplate(projects.currentProjectOnDisplay), projectDisplayContainer)
+})
+
+events.on('renderProject', (project) => {
+    render(projectTemplate(project), projectDisplayContainer)
+    projects.currentProjectOnDisplay = project;
+})
+
+events.on('createProject', (projectInfo) => {
+    projects.addCustomProject(new Project(projectInfo))
+    render(leftMenuTemplate(projects), leftMenu)
+})
+
+render(projectTemplate(projects.currentProjectOnDisplay), projectDisplayContainer)
+render(leftMenuTemplate(projects), leftMenu)
