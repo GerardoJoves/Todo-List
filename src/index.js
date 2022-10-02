@@ -10,7 +10,7 @@ const hamburgerMenuIcon = document.querySelector('#hamburger-menu-icon');
 const leftMenu = document.querySelector('#left-menu');
 
 hamburgerMenuIcon.addEventListener('click', function() {
-    leftMenu.classList.toggle('hidden')
+    leftMenu.classList.toggle('active')
 })
 
 const projects = (function() {
@@ -26,7 +26,7 @@ const projects = (function() {
     }
 
     return {
-        currentProjectOnDisplay: index,
+        currentOnDisplay: index,
         get builtIn() {
             return [...builtIn]
         },
@@ -38,13 +38,15 @@ const projects = (function() {
 })();
 
 events.on('addTask', (taskInfo) => {
-    projects.currentProjectOnDisplay.addTask(new Task(taskInfo))
-    render(projectTemplate(projects.currentProjectOnDisplay), projectDisplayContainer)
+    projects.currentOnDisplay.addTask(new Task(taskInfo))
+    render(projectTemplate(projects.currentOnDisplay), projectDisplayContainer)
+    render(leftMenuTemplate(projects), leftMenu)
 })
 
 events.on('renderProject', (project) => {
+    projects.currentOnDisplay = project;
     render(projectTemplate(project), projectDisplayContainer)
-    projects.currentProjectOnDisplay = project;
+    render(leftMenuTemplate(projects), leftMenu)
 })
 
 events.on('createProject', (projectInfo) => {
@@ -52,5 +54,5 @@ events.on('createProject', (projectInfo) => {
     render(leftMenuTemplate(projects), leftMenu)
 })
 
-render(projectTemplate(projects.currentProjectOnDisplay), projectDisplayContainer)
+render(projectTemplate(projects.currentOnDisplay), projectDisplayContainer)
 render(leftMenuTemplate(projects), leftMenu)
