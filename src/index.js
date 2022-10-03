@@ -3,11 +3,13 @@ import { render } from 'lit-html';
 import { Project } from './project';
 import { Task } from './task';
 import { events } from './events';
-import { projectTemplate, leftMenuTemplate } from './templates';
+import { projectTemplate, leftMenuTemplate, editTaskInputTemplate } from './templates';
 
 const projectDisplayContainer = document.querySelector('#project-display');
 const hamburgerMenuIcon = document.querySelector('#hamburger-menu-icon');
 const leftMenu = document.querySelector('#left-menu');
+const modal = document.querySelector('.modal');
+const modalContent = document.querySelector('.modal-content');
 
 hamburgerMenuIcon.addEventListener('click', function() {
     leftMenu.classList.toggle('active')
@@ -37,22 +39,51 @@ const projects = (function() {
     }
 })();
 
+function loadProject() {
+    render(projectTemplate(projects.currentOnDisplay, [...projects.builtIn, ...projects.custom]), projectDisplayContainer)
+}
+
+function loadLeftMenu() {
+    render(leftMenuTemplate(projects), leftMenu)
+}
+
 events.on('addTask', (taskInfo) => {
     projects.currentOnDisplay.addTask(new Task(taskInfo))
-    render(projectTemplate(projects.currentOnDisplay), projectDisplayContainer)
-    render(leftMenuTemplate(projects), leftMenu)
+    loadProject()
+    loadLeftMenu()
 })
 
 events.on('renderProject', (project) => {
     projects.currentOnDisplay = project;
-    render(projectTemplate(project), projectDisplayContainer)
-    render(leftMenuTemplate(projects), leftMenu)
+    render(projectTemplate(project, [...projects.builtIn, ...projects.custom]), projectDisplayContainer)
+    loadLeftMenu()
 })
 
 events.on('createProject', (projectInfo) => {
     projects.addCustomProject(new Project(projectInfo))
-    render(leftMenuTemplate(projects), leftMenu)
+    loadLeftMenu()
+    loadProject()
 })
 
-render(projectTemplate(projects.currentOnDisplay), projectDisplayContainer)
-render(leftMenuTemplate(projects), leftMenu)
+events.on('deleteTask', (task) => {
+    projects.currentOnDisplay.removeTask(task)
+    loadProject()
+    loadLeftMenu()
+})
+
+events.on('displayTaskEditing', (task) => {
+    modal.classList.add('show-modal')
+    render(editTaskInputTemplate(task, [...projects.builtIn, ...projects.custom]), modalContent)
+})
+
+events.on('editTask', ({task, newTitle, newDescription}) => {
+    task.edit({title: newTitle, description: newDescription})
+    loadProject()
+})
+
+events.on('closeEditingForm', () => {
+    modal.classList.remove('show-modal')
+})
+
+loadProject()
+loadLeftMenu()
