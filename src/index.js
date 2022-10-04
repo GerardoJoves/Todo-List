@@ -4,6 +4,7 @@ import { Project } from './project';
 import { Task } from './task';
 import { events } from './events';
 import { projectTemplate, leftMenuTemplate, editTaskInputTemplate } from './templates';
+import { customizeObject } from 'webpack-merge';
 
 const projectDisplayContainer = document.querySelector('#project-display');
 const hamburgerMenuIcon = document.querySelector('#hamburger-menu-icon');
@@ -27,6 +28,14 @@ const projects = (function() {
         custom.push(project)
     }
 
+    function deleteProject(project) {
+        for(let i = 0; i < custom.length; i++) {
+            if(custom[i] === project) {
+                custom.splice(i, 1)
+            }
+        }
+    }
+
     return {
         currentOnDisplay: index,
         get builtIn() {
@@ -36,6 +45,7 @@ const projects = (function() {
             return [...custom]
         },
         addCustomProject,
+        deleteProject,
     }
 })();
 
@@ -83,6 +93,13 @@ events.on('editTask', ({task, newTitle, newDescription}) => {
 
 events.on('closeEditingForm', () => {
     modal.classList.remove('show-modal')
+})
+
+events.on('deleteProject', (project) => {
+    projects.deleteProject(project)
+    projects.currentOnDisplay = projects.builtIn[0];
+    loadProject()
+    loadLeftMenu()
 })
 
 loadProject()

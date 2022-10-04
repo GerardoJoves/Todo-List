@@ -2,7 +2,7 @@ import { html, nothing } from 'lit-html';
 import { createRef, ref } from 'lit-html/directives/ref.js';
 import { events } from './events';
 
-export function projectTemplate({tasks, title}, projects) {
+export function projectTemplate(project, projects) {
     const taskInputRef = createRef();
     const showInputBtnRef = createRef();
 
@@ -41,9 +41,17 @@ export function projectTemplate({tasks, title}, projects) {
 
     return html`
         <div class="project">
-            <h1 class="project-title">${title}</h1>
+            <div>
+                <h1 class="project-title">${project.title}</h1>
+                ${project === projects[0] ?
+                    nothing : 
+                    html`<span class="delete-project" @click=${() => events.emit('deleteProject', project)}>
+                        Delete Project
+                    </span>`
+                }
+            </div>
             <ul>
-                ${tasks.map(task => taskTemplate(task))}
+                ${project.tasks.map(task => taskTemplate(task))}
             </ul>
             <div class="task-input-container">
                 <div ${ref(showInputBtnRef)} @click=${showInput} class="display-task-input">Add Task</div>
@@ -69,7 +77,7 @@ function taskInputTemplate(titleRef, descriptionRef, projects, taskToEdit = null
             <input type="date" class="date">
 
             <label>Description</label>
-            <textarea ${ref(descriptionRef)}/>${taskToEdit ? taskToEdit.description : ''}</textarea>
+            <textarea ${ref(descriptionRef)}/>${taskToEdit ? taskToEdit.description : nothing}</textarea>
 
             <label>Priority</label>
             <select>

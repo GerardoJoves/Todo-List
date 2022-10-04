@@ -245,6 +245,8 @@ button:hover {
     grid-template-columns: auto 1fr auto;
     margin-bottom: 18px;
     column-gap: 8px;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--borders-color);
 }
 
 .task > div:first-child {
@@ -274,6 +276,25 @@ button:hover {
     visibility: hidden;
     transform: scale(1.1);
     transition: visibility 0s linear 0.25s, opacity 0.25s 0s, transform 0.25s;
+}
+
+.project > div:first-child {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.project .delete-project {
+    border-left: 2px solid var(--main-color);
+    padding: 3px 8px;
+    font-size: .9rem;
+}
+
+.project .delete-project:hover {
+    cursor: pointer;
+    background-color: var(--main-color);
+    border-radius: 5px;
+    color: white;
 }
 
 .modal-content {
