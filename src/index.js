@@ -3,8 +3,7 @@ import { render } from 'lit-html';
 import { Project } from './project';
 import { Task } from './task';
 import { events } from './events';
-import { projectTemplate, leftMenuTemplate, editTaskInputTemplate } from './templates';
-import { customizeObject } from 'webpack-merge';
+import { projectTemplate, leftMenuTemplate, modalContentTemplate } from './templates';
 
 const projectDisplayContainer = document.querySelector('#project-display');
 const hamburgerMenuIcon = document.querySelector('#hamburger-menu-icon');
@@ -36,6 +35,10 @@ const projects = (function() {
         }
     }
 
+    function findProject(title) {
+        return [index, ...custom].find((project) => project.title === title)
+    }
+
     return {
         currentOnDisplay: index,
         get builtIn() {
@@ -46,6 +49,7 @@ const projects = (function() {
         },
         addCustomProject,
         deleteProject,
+        findProject,
     }
 })();
 
@@ -58,9 +62,22 @@ function loadLeftMenu() {
 }
 
 events.on('addTask', (taskInfo) => {
-    projects.currentOnDisplay.addTask(new Task(taskInfo))
-    loadProject()
-    loadLeftMenu()
+    if(projects.currentOnDisplay.title === taskInfo.project) {
+        projects.currentOnDisplay.addTask(new Task(taskInfo))
+        loadProject()
+        loadLeftMenu()
+    } else if(taskInfo.project === 'Index'){
+        projects.builtIn[0].addTask(new Task(taskInfo))
+        loadLeftMenu()
+    } else {
+        for(let project of projects.custom) {
+            if(project.title === taskInfo.project) {
+                project.addTask(new Task(taskInfo))
+                loadLeftMenu()
+                return
+            }
+        }
+    }
 })
 
 events.on('renderProject', (project) => {
@@ -81,17 +98,28 @@ events.on('deleteTask', (task) => {
     loadLeftMenu()
 })
 
-events.on('displayTaskEditing', (task) => {
+events.on('triggerModal', ({task, edit}) => {
     modal.classList.add('show-modal')
-    render(editTaskInputTemplate(task, [...projects.builtIn, ...projects.custom]), modalContent)
+    render(modalContentTemplate(task, edit, projects.currentOnDisplay, [...projects.builtIn, ...projects.custom]), modalContent)
 })
 
-events.on('editTask', ({task, newTitle, newDescription}) => {
-    task.edit({title: newTitle, description: newDescription})
+events.on('editTask', ({task, newTitle, newDescription, newDueDate, newPriority, project}) => {
+    if(task.project != project) {
+        projects.findProject(task.project).removeTask(task)
+        projects.findProject(project).addTask(task)
+    }
+    task.edit({
+        title: newTitle,
+        description: newDescription,
+        dueDate: newDueDate,
+        priority: newPriority,
+        project,
+    })
     loadProject()
+    loadLeftMenu()
 })
 
-events.on('closeEditingForm', () => {
+events.on('closeModal', () => {
     modal.classList.remove('show-modal')
 })
 

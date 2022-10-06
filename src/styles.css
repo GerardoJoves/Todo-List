@@ -37,6 +37,9 @@ img {
 header {
     background-color: var(--main-color);
     padding: 6px 40px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
 }
 
 .content {
@@ -174,6 +177,9 @@ input, textarea, select {
     border: 1px solid var(--borders-color);
     height: 30px;
     padding: 5px;
+    font-size: .9rem;
+    font-family: sans-serif;
+    letter-spacing: 1px;
 }
 
 input[type="checkbox"] {
