@@ -1,12 +1,11 @@
-import { isThisQuarter } from "date-fns";
-
 export class Task {
-    constructor({title, description, dueDate, priority, project}) {
+    constructor({title, description, dueDate, priority, ownerProject, completed = false}) {
         this.title = title;
         this.description = description; 
         this.dueDate = dueDate;
         this.priority = priority;
-        this.project = project;
+        this.ownerProject = ownerProject;
+        this.completed = completed;
     }
 
     edit(props) {

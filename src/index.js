@@ -11,23 +11,31 @@ const leftMenu = document.querySelector('#left-menu');
 const modal = document.querySelector('.modal');
 const modalContent = document.querySelector('.modal-content');
 
+if(window.innerWidth > 800) leftMenu.classList.toggle('active')
 hamburgerMenuIcon.addEventListener('click', function() {
     leftMenu.classList.toggle('active')
 })
 
 const projects = (function() {
-    const index = new Project({
+    const defaultProject = new Project({
         title: 'Index'
     });
 
-    const builtIn = [index];
+    const list = [defaultProject];
+    const builtIn = [defaultProject];
     const custom = [];
 
-    function addCustomProject(project) {
+    function addProject(project) {
+        list.push(project)
         custom.push(project)
     }
 
     function deleteProject(project) {
+        for(let i = 0; i < list.length; i++) {
+            if(list[i] === project) {
+                list.splice(i, 1)
+            }
+        }
         for(let i = 0; i < custom.length; i++) {
             if(custom[i] === project) {
                 custom.splice(i, 1)
@@ -36,58 +44,44 @@ const projects = (function() {
     }
 
     function findProject(title) {
-        return [index, ...custom].find((project) => project.title === title)
+        return [defaultProject, ...list].find((project) => project.title === title)
     }
 
     return {
-        currentOnDisplay: index,
-        get builtIn() {
-            return [...builtIn]
-        },
-        get custom() {
-            return [...custom]
-        },
-        addCustomProject,
+        currentOnDisplay: defaultProject,
+        defaultProject,
+        list,
+        builtIn,
+        custom,
+        addProject,
         deleteProject,
         findProject,
     }
 })();
 
 function loadProject() {
-    render(projectTemplate(projects.currentOnDisplay, [...projects.builtIn, ...projects.custom]), projectDisplayContainer)
+    render(projectTemplate(projects.currentOnDisplay, projects), projectDisplayContainer)
 }
 
 function loadLeftMenu() {
     render(leftMenuTemplate(projects), leftMenu)
 }
 
-events.on('addTask', (taskInfo) => {
-    if(projects.currentOnDisplay.title === taskInfo.project) {
-        projects.currentOnDisplay.addTask(new Task(taskInfo))
-        loadProject()
-        loadLeftMenu()
-    } else if(taskInfo.project === 'Index'){
-        projects.builtIn[0].addTask(new Task(taskInfo))
-        loadLeftMenu()
-    } else {
-        for(let project of projects.custom) {
-            if(project.title === taskInfo.project) {
-                project.addTask(new Task(taskInfo))
-                loadLeftMenu()
-                return
-            }
-        }
-    }
+events.on('addTask', ({taskInfo, project}) => {
+    let task = new Task(taskInfo);
+    project.addTask(task)
+    loadProject()
+    loadLeftMenu()
 })
 
 events.on('renderProject', (project) => {
     projects.currentOnDisplay = project;
-    render(projectTemplate(project, [...projects.builtIn, ...projects.custom]), projectDisplayContainer)
+    render(projectTemplate(project, projects), projectDisplayContainer)
     loadLeftMenu()
 })
 
 events.on('createProject', (projectInfo) => {
-    projects.addCustomProject(new Project(projectInfo))
+    projects.addProject(new Project(projectInfo))
     loadLeftMenu()
     loadProject()
 })
@@ -98,23 +92,17 @@ events.on('deleteTask', (task) => {
     loadLeftMenu()
 })
 
-events.on('triggerModal', ({task, edit}) => {
+events.on('triggerModal', ({task, editTask}) => {
     modal.classList.add('show-modal')
-    render(modalContentTemplate(task, edit, projects.currentOnDisplay, [...projects.builtIn, ...projects.custom]), modalContent)
+    render(modalContentTemplate({task, editTask, projects}), modalContent)
 })
 
-events.on('editTask', ({task, newTitle, newDescription, newDueDate, newPriority, project}) => {
-    if(task.project != project) {
-        projects.findProject(task.project).removeTask(task)
-        projects.findProject(project).addTask(task)
+events.on('editTask', ({task, newValues}) => {
+    if(newValues.ownerProject != projects.currentOnDisplay.title) {
+        projects.findProject(task.ownerProject).removeTask(task)
+        projects.findProject(newValues.ownerProject).addTask(task)
     }
-    task.edit({
-        title: newTitle,
-        description: newDescription,
-        dueDate: newDueDate,
-        priority: newPriority,
-        project,
-    })
+    task.edit(newValues)
     loadProject()
     loadLeftMenu()
 })

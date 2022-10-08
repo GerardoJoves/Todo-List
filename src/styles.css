@@ -3,6 +3,7 @@ html {
     font-size: 16px;
     --main-color: rgb(255, 144, 52);
     --text-color: rgb(51, 51, 51);
+    --light-text: rgb(150, 150, 150);
     --sidemenu-color: rgb(242, 242, 242);
     --borders-color: rgb(201, 201, 201);
 }
@@ -229,35 +230,31 @@ button:hover {
     cursor: pointer;
 }
 
-@media only screen and (max-width: 800px) {
-    #left-menu.active {
-        position: absolute;
-        background-color: rgba(39, 39, 39, 0.363);
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-    }
-}
-
-@media screen and (max-width: 500px) {
-    .task-input input, .task-input textarea, select {
-        grid-column-end: span 4;
-    }
-}
-
 .task {
     display: grid;
     grid-template-columns: auto 1fr auto;
-    margin-bottom: 18px;
+    margin-bottom: 24px;
     column-gap: 8px;
+    row-gap: 5px;
     padding: 4px 0;
     border-bottom: 1px solid var(--borders-color);
 }
 
-.task > div:first-child {
-    grid-row-end: span 2 ;
+.task.completed {
+    color: var(--light-text);
+}
+
+.task.completed .title {
+    text-decoration: line-through;
+}
+
+.task > div:first-child, .task > .icons-container {
+    grid-row-end: span 3;
     align-self: start;
+}
+
+.task .due-date {
+    font-size: .9rem;
 }
 
 .task .title, .task .description {
@@ -267,8 +264,74 @@ button:hover {
 }
 
 .task .description {
-    color: rgb(150, 150, 150);
+    color: var(--light-text);
     font-size: .8rem;
+}
+
+.task.high .flag {
+    color: rgb(223, 0, 0);
+}
+
+.task.medium .flag {
+    color: var(--main-color);
+}
+
+.task.low .flag {
+    color: green;
+}
+
+input[type="checkbox"] {
+    appearance: none;
+    background-color: #fff;
+    margin: 2px 0 0 0;
+    border: 2px solid var(--text-color);
+    border-radius: 3px;
+    width: 17px;
+    height: 17px;
+    display: grid;
+    place-content: center;
+}
+
+input[type="checkbox"]::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    transform: scale(0);
+    background-color: rgb(36, 36, 255);
+    transform-origin: bottom left;
+    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+
+input[type="checkbox"]:checked::before {
+    transform: scale(1);
+    transition: 120ms transform ease-in-out;
+}
+
+.details {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    font-size: .9rem;
+    gap: 5px;
+}
+
+.details .section span {
+    font-weight: bold;
+    border-bottom: 1px solid var(--borders-color);
+    margin: 10px 0;
+}
+
+.details .section {
+    display: grid;
+    margin-bottom: 30px;
+}
+
+.details .close-modal-btn {
+    font-weight: bold;
+    margin: -10px -10px 0 0;
+}
+
+.details .close-modal-btn:hover {
+    cursor: pointer;
 }
 
 .modal {
@@ -309,9 +372,10 @@ button:hover {
     left: 50%;
     transform: translate(-50%, -50%);
     background-color: white;
-    padding: 1rem 1.5rem;
+    padding: 12px 18px;
     border-radius: 0.5rem;
     min-width: 250px;
+    width: min(750px, 70%);
 }
 
 .show-modal {
@@ -319,4 +383,33 @@ button:hover {
     visibility: visible;
     transform: scale(1.0);
     transition: visibility 0s linear 0s, opacity 0.25s 0s, transform 0.25s;
+}
+
+@media only screen and (max-width: 800px) {
+    #left-menu.active {
+        position: absolute;
+        background-color: rgba(39, 39, 39, 0.363);
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .modal-content {
+        width: 80%;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .task-input input, .task-input textarea, select {
+        grid-column-end: span 4;
+    }
+
+    .modal-content {
+        width: initial;
+    }
+
+    .details-content {
+        grid-template-columns: 1fr;
+    }
 }

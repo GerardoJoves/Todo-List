@@ -1,3 +1,4 @@
+import { format } from 'date-fns';
 import { html, nothing } from 'lit-html';
 import { createRef, ref } from 'lit-html/directives/ref.js';
 import { live } from 'lit-html/directives/live.js';
@@ -16,56 +17,18 @@ export function projectTemplate(project, projects) {
     function hideInput() {
         taskInputRef.value.classList.add('hidden')
         showInputBtnRef.value.classList.remove('hidden')
-        clearInput()
     }
 
-    function clearInput() {
-        titleRef.value.value = '';
-        descriptionRef.value.value = '';
-        dueDateRef.value.value = '';
-        priorityRef.value.value = 'high';
-        projectRef.value.value = project.title;
-    }
-
-    let titleRef = createRef();
-    let descriptionRef = createRef();
-    let dueDateRef = createRef();
-    let priorityRef = createRef();
-    let projectRef = createRef();
-
-    function addTaskHandler() {
-        let title = titleRef.value.value;
-        let description = descriptionRef.value.value;
-        let dueDate = dueDateRef.value.value;
-        let priority = priorityRef.value.value;
-        let project = projectRef.value.value;
-
-        clearInput();
-        hideInput();
-
-        events.emit('addTask', {
-            title,
-            description,
-            dueDate,
-            priority,
-            project,
-        })
-    }
-
-    function buttons() {
-        return html`
-            <div class="buttons">
-                <button @click=${addTaskHandler} type="button">Add Task</button>
-                <button @click=${hideInput} type="button">Cancel</button>
-            </div>
-        `
+    function addTaskToProject(taskInfo) {
+        hideInput()
+        events.emit('addTask', {taskInfo, project})
     }
 
     return html`
         <div class="project">
             <div>
                 <h1 class="project-title">${project.title}</h1>
-                ${project === projects[0] ?
+                ${project === projects.defaultProject ?
                     nothing : 
                     html`<span class="delete-project" @click=${() => events.emit('deleteProject', project)}>
                         Delete Project
@@ -79,16 +42,11 @@ export function projectTemplate(project, projects) {
                 <div ${ref(showInputBtnRef)} @click=${showInput} class="display-task-input">Add Task</div>
                 <div ${ref(taskInputRef)} class="hidden">
                     ${taskInputTemplate({
-                        titleRef,
-                        descriptionRef,
-                        dueDateRef,
-                        priorityRef,
-                        projectRef
-                    }, {
-                        currentOnDisplay: project,
+                        submitionHandler: addTaskToProject,
+                        cancelationHandler: hideInput,
                         projects,
+                        defaultValues: false,
                     })}
-                    ${buttons()}
                 </div>
             </div>
         </div>
@@ -96,71 +54,112 @@ export function projectTemplate(project, projects) {
 }
 
 function taskInputTemplate({
-    titleRef, 
-    descriptionRef, 
-    dueDateRef, 
-    priorityRef, 
-    projectRef
-}, {currentOnDisplay, projects}, taskToEdit = null) {
+    submitionHandler,
+    cancelationHandler,
+    projects,
+    defaultValues = null,
+}) {
+
+    const refs = {
+        title: createRef(),
+        description: createRef(),
+        priority: createRef(),
+        dueDate: createRef(),
+        ownerProject: createRef(),
+    }
+
+    function getInputValues() {
+        return {
+            title: refs.title.value.value,
+            description: refs.description.value.value,
+            priority: refs.priority.value.value,
+            dueDate: refs.dueDate.value.value,
+            ownerProject: refs.ownerProject.value.value,
+        }
+    }
+
+    function clearInput() {
+        refs.title.value.value = '';
+        refs.description.value.value = '';
+        refs.dueDate.value.value = '';
+        refs.priority.value.value = 'high';
+        refs.ownerProject.value.value = projects.currentOnDisplay.title
+    }
+
+    function controlBtns() {
+        return html`
+            <div class="buttons">
+                <button type="button"
+                    @click=${() => {
+                        let inputValues = getInputValues();
+                        clearInput()
+                        submitionHandler(inputValues)
+                    }}>
+                    Confirm
+                </button>
+                <button type="button"
+                    @click=${() => {
+                        clearInput()
+                        cancelationHandler()
+                    }}>
+                    Cancel
+                </button>
+            </div>
+        `
+    }
 
     return html`
-        <div class="task-input">
+        <div>
+            <div class="task-input">
 
-            <label>Title</label>
-            <input ${ref(titleRef)} type="text" class="title"
-                .value=${taskToEdit ? live(taskToEdit.title) : nothing}>
+                <label>Title</label>
+                <input ${ref(refs.title)} type="text" class="title"
+                    .value=${defaultValues ? live(defaultValues.title) : ''}>
 
-            <label>Due Date</label>
-            <input ${ref(dueDateRef)} type="date" class="date"
-                .value=${taskToEdit ? live(taskToEdit.dueDate) : nothing}>
+                <label>Due Date</label>
+                <input ${ref(refs.dueDate)} type="date" class="date"
+                    .value=${defaultValues ? live(defaultValues.dueDate) : ''}>
 
-            <label>Description</label>
-            <textarea ${ref(descriptionRef)}
-                .value=${taskToEdit ? live(taskToEdit.description) : nothing}></textarea>
+                <label>Description</label>
+                <textarea ${ref(refs.description)}
+                    .value=${defaultValues ? live(defaultValues.description) : ''}></textarea>
 
-            <label>Priority</label>
-            <select ${ref(priorityRef)}
-                .value=${taskToEdit ? live(taskToEdit.priority) : 'low'}>
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
-            </select>
+                <label>Priority</label>
 
-            <label>Project</label>
-            <select ${ref(projectRef)}>
-                ${projects.map(project => {
-                    return html`
-                        <option value=${project.title}
-                            ?selected=${currentOnDisplay.title === project.title ? true : nothing}>${project.title}</option>
-                    `
-                })}
-            </select>
+                <select ${ref(refs.priority)}
+                    .value=${defaultValues ? live(defaultValues.priority) : 'high'}>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                </select>
+
+                <label>Project</label>
+
+                <select ${ref(refs.ownerProject)}>
+                    ${projects.list.map((project) => {
+                        return html`
+                            <option
+                                value=${project.title}
+                                .selected=${projects.currentOnDisplay.title === project.title ? true : false}>
+                                ${project.title}
+                            </option>
+                        `})}
+                </select>
+            </div>
+
+            ${controlBtns()}
         </div>
     `
 }
 
-export function modalContentTemplate(task, edit, currentOnDisplay, projects) {
-    let titleRef = createRef();
-    let descriptionRef = createRef();
-    let dueDateRef = createRef();
-    let priorityRef = createRef();
-    let projectRef = createRef();
+export function modalContentTemplate({
+    task,
+    editTask = false,
+    projects,
+}) {
 
-    function clearInput() {
-        titleRef.value.value = '';
-        descriptionRef.value.value = '';
-        dueDateRef.value.value = '';
-        priorityRef.value.value = 'high';
-        projectRef.value.value = currentOnDisplay.title;
-    }
-
-    function editTaskHandler() {
-        let newTitle = titleRef.value.value;
-        let newDescription = descriptionRef.value.value;
-        let newDueDate = dueDateRef.value.value;
-        let newPriority = priorityRef.value.value;
-        let project = projectRef.value.value;
-        events.emit('editTask', {task, newTitle, newDescription, newDueDate, newPriority, project})
+    function editTaskHandler(taskInfo) {
+        events.emit('editTask', {task, newValues: taskInfo})
         events.emit('closeModal')
     }
 
@@ -171,31 +170,41 @@ export function modalContentTemplate(task, edit, currentOnDisplay, projects) {
     function editView() {
         return html`
             <div>
-                ${taskInputTemplate({titleRef, descriptionRef, dueDateRef, priorityRef, projectRef}, {currentOnDisplay, projects}, task)}
-                <div class="buttons">
-                    <button @click=${editTaskHandler} type="button">Edit Task</button>
-                    <button @click=${() => {
-                        closeModalHandler()
-                        clearInput()
-                    }} type="button">Cancel</button>
-                </div>
-            </div>
-        `
+                ${taskInputTemplate({
+                    submitionHandler: editTaskHandler,
+                    cancelationHandler: closeModalHandler,
+                    projects, 
+                    defaultValues: task,
+                })}
+            </div>`
     }
 
     function detailView() {
         return html `
-            <div>
-                <div>
-                    <h1>${task.title}</h1>
-                    <span @click=${closeModalHandler}>x</span>
+            <div class="details">
+                <div class="details-content">
+                    <div class="section">
+                        <span>Title: </span>
+                        <div>${task.title}</div>
+                    </div>
+                    <div class="section">
+                        <span>Description: </span>
+                        <div>${task.description ? task.description : 'No description'}</div>
+                    </div>
+                    <div class="section">
+                        <span>Due Date: </span>
+                        <div>${task.dueDate ? format(new Date(task.dueDate), 'MMM do Y') : 'No due Date'}</div>
+                    </div>
+                    <div class="section">
+                        <span>Priority: </span>
+                        <div>${task.priority}</div>
+                    </div>
                 </div>
-                <div>${task.description}</div>
-            </div>
-        `
+                <span @click=${closeModalHandler} class="close-modal-btn">x</span>
+            </div>`
     }
 
-    return html`${cache(edit ? editView() : detailView())}`
+    return html`${cache(editTask ? editView() : detailView())}`
 }
 
 function taskTemplate(task) {
@@ -208,26 +217,43 @@ function taskTemplate(task) {
         <path fill="currentColor" d="M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M8,9H16V19H8V9M15.5,4L14.5,3H9.5L8.5,4H5V6H19V4H15.5Z" />
     </svg>`
 
+    let taskRef = createRef();
+    let checkboxRef = createRef();
+    function checkboxHandler(e) {
+        e.stopPropagation()
+        if(checkboxRef.value.checked) {
+            task.completed = true;
+            console.log(taskRef.value)
+            taskRef.value.classList.add('completed')
+        } else {
+            task.completed = false;
+            taskRef.value.classList.remove('completed')
+        }
+        console.log(task)
+    }
+
     return html`
-        <li class="task" @click=${() => events.emit('triggerModal', {task, edit: false})}>
+        <li class="task ${task.priority ? task.priority : nothing} ${task.completed ? 'completed' : ''}"
+        ${ref(taskRef)}
+        @click=${() => events.emit('triggerModal', {task, edit: false})}>
             <div>
-                <input class="task-checkbox" type="checkbox" value="completed">
+                <input type="checkbox" value="completed"
+                class="task-checkbox" ${ref(checkboxRef)}
+                @click=${checkboxHandler}
+                .checked=${live(task.completed ? true : false)}>
             </div>
             <div class="title">${task.title}</div>
             <div class="icons-container">
                 <span @click=${(e) => {
                         e.stopPropagation()
-                        events.emit('triggerModal', {task, edit: true})
+                        events.emit('triggerModal', {task, editTask: true})
                     }}>${editIcon}</span>
                 <span @click=${(e) => {
                         e.stopPropagation()
                         events.emit('deleteTask', task)
                     }}>${deleteIcon}</span>
             </div>
-            <div class="description">${task.description}</div>
-            <div>
-                <div>${task.dueDate}</div>
-            </div>
+            <div class="due-date">${task.dueDate ? format(new Date(task.dueDate), 'MMM do Y') : 'No due date'}
         </li>
     `
 }
@@ -257,8 +283,8 @@ export function leftMenuTemplate(projects) {
     }
 
     const inputRef = createRef();
-    function addProjectInput() {
-        const titleRef = createRef();
+    const titleRef = createRef();
+    function projectInput() {
 
         return html`
             <div class="project-input hidden" ${ref(inputRef)}>
@@ -294,7 +320,7 @@ export function leftMenuTemplate(projects) {
                     </svg>
                 </div>
             </div>
-            ${addProjectInput()}
+            ${projectInput()}
             <div class="projects-container custom">
                 ${projects.custom.map(projectBtn)}
             </div>
