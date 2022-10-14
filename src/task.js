@@ -5,7 +5,7 @@ export class Task {
         this.dueDate = dueDate;
         this.priority = priority;
         this.ownerProject = ownerProject;
-        this.completed = completed;
+        this.completed = !!completed;
     }
 
     edit(props) {

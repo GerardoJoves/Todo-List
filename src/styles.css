@@ -1,15 +1,16 @@
 html {
     box-sizing: border-box;
     font-size: 16px;
-    --main-color: rgb(255, 144, 52);
+    --main-color: rgb(154, 122, 228);
     --text-color: rgb(51, 51, 51);
     --light-text: rgb(150, 150, 150);
-    --sidemenu-color: rgb(242, 242, 242);
-    --borders-color: rgb(201, 201, 201);
+    --sidemenu-color: rgb(240, 240, 240);
+    --borders-color: rgb(184, 184, 184);
 }
 
 *, *:before, *:after {
     box-sizing: inherit;
+    word-break: break-all;
 }
 
 body, h1, h2, h3, h4, h5, h6, p, ol, ul {
@@ -37,10 +38,20 @@ img {
 
 header {
     background-color: var(--main-color);
-    padding: 6px 40px;
+    padding: 5px 50px 5px 30px;
     display: flex;
+    height: 50px;
     align-items: center;
     gap: 20px;
+    justify-content: space-between;
+}
+
+header .icon {
+    width: 28px;
+}
+
+header .icon:hover {
+    cursor: pointer;
 }
 
 .content {
@@ -50,6 +61,7 @@ header {
 
 #left-menu { 
     display: none;
+    z-index: 1;
 }
 
 #left-menu.active {
@@ -69,9 +81,13 @@ header {
 }
 
 #left-menu .project-input > div:first-child {
-    display: grid;
+    display: flex;
     gap: 10px;
-    grid-template-columns: auto 1fr;
+    align-items: center;
+}
+
+.project-input label {
+    flex-shrink: 0;
 }
 
 #left-menu > div{
@@ -96,41 +112,55 @@ header {
 
 #left-menu .projects-container > div:hover, 
 #left-menu .projects-container > .on-display {
-    background-color: rgb(221, 221, 221);
+    background-color: rgb(218, 218, 218);
     cursor: pointer;
 }
 
+.circle-icon {
+    color: var(--main-color);
+}
+
 #left-menu .projects-container > div {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    align-items: center;
     gap: 10px;
 }
 
 #left-menu .projects-container > div > span:last-child {
-    flex-basis: 40px;
-    flex-shrink: 0;
+    min-width: 40px;
     text-align: right;
 }
 
-#left-menu .projects-container > div > span:first-child {
+#left-menu .projects-container > div > span:first-of-type {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    min-width: 0;
 }
 
 #project-display {
     width: 100%;
-    padding: 20px;
+    padding: 40px 20px;
     display: grid;
     justify-content: center;
     grid-template-columns: minmax(200px, 700px);
+    overflow-y: scroll;
+    height: calc(100vh - 50px);
+}
+
+.clickable:hover {
+    cursor: pointer;
+    color: black;
 }
 
 .project-title {
-    justify-self: left;
-    margin-bottom: 30px;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     font-weight: bold;
+    border-bottom: 2px solid var(--main-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .hidden {
@@ -139,6 +169,10 @@ header {
 
 .project .display-task-input {
     text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     background-color: var(--sidemenu-color);
     border-radius: 5px;
     padding: 8px 5px;
@@ -150,13 +184,32 @@ header {
     padding: 18px 14px;
     width: 100%;
     display: grid;
-    grid-template-columns: auto 1fr auto 1fr ;
-    gap: 10px;
-    min-width: min-content;
+    grid-template-columns: 1fr 1fr ;
+    column-gap: 20px;
+    row-gap: 10px;
+    min-width: 200px;
+}
+
+.task-input label.description {
+    grid-column-end: span 2;
+}
+
+.modal-content .task-input {
+    border: none;
+    padding: 10px 4px 0 4px;
 }
 
 .task-input label {
-    text-align: left;
+    display: grid;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.task-input label.priority,
+.task-input label.project {
+    grid-template-columns: auto 1fr;
 }
 
 textarea {
@@ -174,29 +227,20 @@ input.title {
 }
 
 input, textarea, select {
-    border-radius: 5px;
+    border-radius: 2px;
     border: 1px solid var(--borders-color);
-    height: 30px;
+    box-shadow: 1px 2px 4px rgb(226, 226, 226);
+    height: 32px;
     padding: 5px;
     font-size: .9rem;
     font-family: sans-serif;
     letter-spacing: 1px;
-}
-
-input[type="checkbox"] {
-    margin: 0;
-    height: auto;
+    background-color: inherit;
+    min-width: 0;
 }
 
 textarea {
     height: 60px;
-}
-
-label {
-    display: flex;
-    align-items: center;
-    min-width: max-content;
-    font-size: .9rem;
 }
 
 .buttons {
@@ -213,6 +257,10 @@ input[type="date"], select {
 
 select {
     background-color: inherit;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
 }
 
 button {
@@ -248,6 +296,12 @@ button:hover {
     text-decoration: line-through;
 }
 
+.task .icons-container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
 .task > div:first-child, .task > .icons-container {
     grid-row-end: span 3;
     align-self: start;
@@ -273,17 +327,21 @@ button:hover {
 }
 
 .task.medium .flag {
-    color: var(--main-color);
+    color: rgb(255, 166, 32);
 }
 
 .task.low .flag {
     color: green;
 }
 
+.task.completed .flag {
+    color: var(--light-text);
+}
+
 input[type="checkbox"] {
     appearance: none;
     background-color: #fff;
-    margin: 2px 0 0 0;
+    margin: 0;
     border: 2px solid var(--text-color);
     border-radius: 3px;
     width: 17px;
@@ -308,26 +366,35 @@ input[type="checkbox"]:checked::before {
 }
 
 .details {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    font-size: .9rem;
-    gap: 5px;
+    position: relative;
 }
 
 .details .section span {
-    font-weight: bold;
-    border-bottom: 1px solid var(--borders-color);
+    font-weight: bold;;
     margin: 10px 0;
 }
 
 .details .section {
-    display: grid;
-    margin-bottom: 30px;
+    margin-bottom: 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    column-gap: 20px;
+    border-bottom: 1px solid var(--borders-color);
+}
+
+.details .section:last-child {
+    margin: 0;
+    border: none;
 }
 
 .details .close-modal-btn {
     font-weight: bold;
     margin: -10px -10px 0 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    font-size: 1.2rem;
 }
 
 .details .close-modal-btn:hover {
@@ -335,6 +402,7 @@ input[type="checkbox"]:checked::before {
 }
 
 .modal {
+    z-index: 2;
     position: fixed;
     left: 0;
     top: 0;
@@ -349,6 +417,8 @@ input[type="checkbox"]:checked::before {
 
 .project > div:first-child {
     display: flex;
+    gap: 30px;
+    margin-bottom: 40px;
     justify-content: space-between;
     align-items: flex-start;
 }
@@ -357,12 +427,13 @@ input[type="checkbox"]:checked::before {
     border-left: 2px solid var(--main-color);
     padding: 3px 8px;
     font-size: .9rem;
+    flex-shrink: 0;
 }
 
 .project .delete-project:hover {
     cursor: pointer;
     background-color: var(--main-color);
-    border-radius: 5px;
+    border-radius: 1px;
     color: white;
 }
 
@@ -375,7 +446,6 @@ input[type="checkbox"]:checked::before {
     padding: 12px 18px;
     border-radius: 0.5rem;
     min-width: 250px;
-    width: min(750px, 70%);
 }
 
 .show-modal {
@@ -394,15 +464,11 @@ input[type="checkbox"]:checked::before {
         width: 100%;
         height: 100%;
     }
-
-    .modal-content {
-        width: 80%;
-    }
 }
 
 @media screen and (max-width: 600px) {
-    .task-input input, .task-input textarea, select {
-        grid-column-end: span 4;
+    .task-input label {
+        grid-column-end: span 2;
     }
 
     .modal-content {

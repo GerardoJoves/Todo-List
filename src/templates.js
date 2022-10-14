@@ -5,6 +5,35 @@ import { live } from 'lit-html/directives/live.js';
 import { cache } from 'lit-html/directives/cache.js';
 import { events } from './events';
 
+const editIcon = html`
+<svg style="width:20px;height:20px" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M16.84,2.73C16.45,2.73 16.07,2.88 15.77,3.17L13.65,5.29L18.95,10.6L21.07,8.5C21.67,7.89 21.67,6.94 21.07,6.36L17.9,3.17C17.6,2.88 17.22,2.73 16.84,2.73M12.94,6L4.84,14.11L7.4,14.39L7.58,16.68L9.86,16.85L10.15,19.41L18.25,11.3M4.25,15.04L2.5,21.73L9.2,19.94L8.96,17.78L6.65,17.61L6.47,15.29" />
+</svg>`;
+const deleteIcon = html`
+<svg style="width:20px;height:20px" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M8,9H16V19H8V9M15.5,4L14.5,3H9.5L8.5,4H5V6H19V4H15.5Z" />
+</svg>`
+const flagIcon = html`
+<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M14.4,6L14,4H5V21H7V14H12.6L13,16H20V6H14.4Z" />
+</svg>`
+const inboxIcon = html`
+<svg style="width:20px;height:20px" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M19,15H15A3,3 0 0,1 12,18A3,3 0 0,1 9,15H5V5H19M19,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3Z" />
+</svg>`
+const addProjectIcon = html`
+<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M13 19C13 19.34 13.04 19.67 13.09 20H4C2.9 20 2 19.11 2 18V6C2 4.89 2.89 4 4 4H10L12 6H20C21.1 6 22 6.89 22 8V13.81C21.39 13.46 20.72 13.22 20 13.09V8H4V18H13.09C13.04 18.33 13 18.66 13 19M20 18V15H18V18H15V20H18V23H20V20H23V18H20Z" />
+</svg>`
+const circleIcon = html`
+<svg style="width:10px;height:10px" viewBox="0 0 24 24" class="circle-icon">
+    <path fill="currentColor" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" />
+</svg>`
+const plusIcon = html`
+<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
+</svg>`
+
 export function projectTemplate(project, projects) {
     const taskInputRef = createRef();
     const showInputBtnRef = createRef();
@@ -21,7 +50,7 @@ export function projectTemplate(project, projects) {
 
     function addTaskToProject(taskInfo) {
         hideInput()
-        events.emit('addTask', {taskInfo, project})
+        events.emit('addTask', {taskInfo, project: taskInfo.ownerProject === project.title ? project : null})
     }
 
     return html`
@@ -39,7 +68,10 @@ export function projectTemplate(project, projects) {
                 ${project.tasks.map(task => taskTemplate(task))}
             </ul>
             <div class="task-input-container">
-                <div ${ref(showInputBtnRef)} @click=${showInput} class="display-task-input">Add Task</div>
+                <div ${ref(showInputBtnRef)} @click=${showInput} class="display-task-input clickable">
+                    ${plusIcon}
+                    <span>Add Task</span>
+                </div>
                 <div ${ref(taskInputRef)} class="hidden">
                     ${taskInputTemplate({
                         submitionHandler: addTaskToProject,
@@ -57,7 +89,7 @@ function taskInputTemplate({
     submitionHandler,
     cancelationHandler,
     projects,
-    defaultValues = null,
+    defaultValues = false,
 }) {
 
     const refs = {
@@ -69,6 +101,7 @@ function taskInputTemplate({
     }
 
     function getInputValues() {
+        console.log(refs.dueDate.value.value)
         return {
             title: refs.title.value.value,
             description: refs.description.value.value,
@@ -112,30 +145,37 @@ function taskInputTemplate({
         <div>
             <div class="task-input">
 
-                <label>Title</label>
-                <input ${ref(refs.title)} type="text" class="title"
+                <label class="title">
+                    Title:
+                    <input ${ref(refs.title)} type="text" class="title"
                     .value=${defaultValues ? live(defaultValues.title) : ''}>
+                </label>
 
-                <label>Due Date</label>
-                <input ${ref(refs.dueDate)} type="date" class="date"
+                <label class="due-date">
+                    Due Date:
+                    <input ${ref(refs.dueDate)} type="date" class="date"
                     .value=${defaultValues ? live(defaultValues.dueDate) : ''}>
+                </label>
 
-                <label>Description</label>
-                <textarea ${ref(refs.description)}
+                <label class="description">
+                    Description:
+                    <textarea ${ref(refs.description)}
                     .value=${defaultValues ? live(defaultValues.description) : ''}></textarea>
+                </label>
 
-                <label>Priority</label>
-
-                <select ${ref(refs.priority)}
+                <label class="priority">
+                    Priority:
+                    <select ${ref(refs.priority)}
                     .value=${defaultValues ? live(defaultValues.priority) : 'high'}>
-                    <option value="high">High</option>
-                    <option value="medium">Medium</option>
-                    <option value="low">Low</option>
-                </select>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </label>
 
-                <label>Project</label>
-
-                <select ${ref(refs.ownerProject)}>
+                <label class="project">
+                    Project:
+                    <select ${ref(refs.ownerProject)}>
                     ${projects.list.map((project) => {
                         return html`
                             <option
@@ -144,7 +184,8 @@ function taskInputTemplate({
                                 ${project.title}
                             </option>
                         `})}
-                </select>
+                    </select>
+                </label>
             </div>
 
             ${controlBtns()}
@@ -153,8 +194,9 @@ function taskInputTemplate({
 }
 
 export function modalContentTemplate({
-    task,
+    task = null,
     editTask = false,
+    newTask = false,
     projects,
 }) {
 
@@ -164,6 +206,11 @@ export function modalContentTemplate({
     }
 
     function closeModalHandler() {
+        events.emit('closeModal')
+    }
+
+    function newTaskHandler(taskInfo) {
+        events.emit('addTask', {taskInfo})
         events.emit('closeModal')
     }
 
@@ -179,6 +226,17 @@ export function modalContentTemplate({
             </div>`
     }
 
+    function newTaskView() {
+        return html`
+            <div>
+                ${taskInputTemplate({
+                    submitionHandler: newTaskHandler,
+                    cancelationHandler: closeModalHandler,
+                    projects,
+                })}
+            </div>`
+    }
+
     function detailView() {
         return html `
             <div class="details">
@@ -189,7 +247,7 @@ export function modalContentTemplate({
                     </div>
                     <div class="section">
                         <span>Description: </span>
-                        <div>${task.description ? task.description : 'No description'}</div>
+                        <div class="description">${task.description ? task.description : 'No description'}</div>
                     </div>
                     <div class="section">
                         <span>Due Date: </span>
@@ -204,21 +262,14 @@ export function modalContentTemplate({
             </div>`
     }
 
-    return html`${cache(editTask ? editView() : detailView())}`
+    return html`${cache(editTask ? editView() : newTask ? newTaskView() : detailView())}`
 }
 
 function taskTemplate(task) {
-    const editIcon = html`
-    <svg style="width:20px;height:20px" viewBox="0 0 24 24">
-        <path fill="currentColor" d="M16.84,2.73C16.45,2.73 16.07,2.88 15.77,3.17L13.65,5.29L18.95,10.6L21.07,8.5C21.67,7.89 21.67,6.94 21.07,6.36L17.9,3.17C17.6,2.88 17.22,2.73 16.84,2.73M12.94,6L4.84,14.11L7.4,14.39L7.58,16.68L9.86,16.85L10.15,19.41L18.25,11.3M4.25,15.04L2.5,21.73L9.2,19.94L8.96,17.78L6.65,17.61L6.47,15.29" />
-    </svg>`;
-    const deleteIcon = html`
-    <svg style="width:20px;height:20px" viewBox="0 0 24 24">
-        <path fill="currentColor" d="M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M8,9H16V19H8V9M15.5,4L14.5,3H9.5L8.5,4H5V6H19V4H15.5Z" />
-    </svg>`
 
     let taskRef = createRef();
     let checkboxRef = createRef();
+
     function checkboxHandler(e) {
         e.stopPropagation()
         if(checkboxRef.value.checked) {
@@ -229,11 +280,11 @@ function taskTemplate(task) {
             task.completed = false;
             taskRef.value.classList.remove('completed')
         }
-        console.log(task)
+        events.emit('updateLocalStorage')
     }
 
     return html`
-        <li class="task ${task.priority ? task.priority : nothing} ${task.completed ? 'completed' : ''}"
+        <li .className=${`task ${task.priority ? task.priority : nothing} ${task.completed ? 'completed' : ''}`}
         ${ref(taskRef)}
         @click=${() => events.emit('triggerModal', {task, edit: false})}>
             <div>
@@ -244,16 +295,17 @@ function taskTemplate(task) {
             </div>
             <div class="title">${task.title}</div>
             <div class="icons-container">
-                <span @click=${(e) => {
+                <span class="clickable" @click=${(e) => {
                         e.stopPropagation()
                         events.emit('triggerModal', {task, editTask: true})
                     }}>${editIcon}</span>
-                <span @click=${(e) => {
+                <span class="clickable" @click=${(e) => {
                         e.stopPropagation()
                         events.emit('deleteTask', task)
                     }}>${deleteIcon}</span>
+                <span class="flag">${flagIcon}</span>
             </div>
-            <div class="due-date">${task.dueDate ? format(new Date(task.dueDate), 'MMM do Y') : 'No due date'}
+            <div class="due-date">${task.dueDate ? format(new Date(task.dueDate.replaceAll('-', '/')), 'MMM do Y') : nothing}
         </li>
     `
 }
@@ -265,11 +317,12 @@ export function leftMenuTemplate(projects) {
         events.emit('renderProject', project);
     }
 
-    function projectBtn(project) {
+    function projectBtn(project, icon) {
         return html`
             <div @click=${() => displayProject(project)}
             class=${projects.currentOnDisplay === project ?
             'on-display' : nothing}>
+                ${icon ? icon : nothing}
                 <span>
                     ${project.title}
                 </span>
@@ -310,19 +363,21 @@ export function leftMenuTemplate(projects) {
     return html`
         <div>
             <div class="projects-container default">
-                ${projects.builtIn.map(projectBtn)}
+                ${projects.builtIn.map(p => {
+                    if(p.title === 'Index') return projectBtn(p, inboxIcon)
+                    else return projectBtn(p)
+                })}
             </div>
             <div>
                 <span>Projects</span>
-                <div @click=${() => inputRef.value.classList.toggle('hidden')}>
-                    <svg style="width:24px;height:24px" viewBox="0 0 24 24">
-                        <path fill="currentColor" d="M13 19C13 19.34 13.04 19.67 13.09 20H4C2.9 20 2 19.11 2 18V6C2 4.89 2.89 4 4 4H10L12 6H20C21.1 6 22 6.89 22 8V13.81C21.39 13.46 20.72 13.22 20 13.09V8H4V18H13.09C13.04 18.33 13 18.66 13 19M20 18V15H18V18H15V20H18V23H20V20H23V18H20Z" />
-                    </svg>
+                <div class="clickable"
+                    @click=${() => inputRef.value.classList.toggle('hidden')}>
+                    ${addProjectIcon}
                 </div>
             </div>
             ${projectInput()}
             <div class="projects-container custom">
-                ${projects.custom.map(projectBtn)}
+                ${projects.custom.map(p => projectBtn(p, circleIcon))}
             </div>
         </div>
     `
