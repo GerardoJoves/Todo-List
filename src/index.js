@@ -53,10 +53,6 @@ const projects = (function() {
         title: 'Index'
     });
 
-    const today = new Project({
-        title: 'Today'
-    })
-
     const list = [defaultProject];
     const builtIn = [defaultProject];
     const custom = [];

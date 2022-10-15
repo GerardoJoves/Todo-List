@@ -10,7 +10,6 @@ html {
 
 *, *:before, *:after {
     box-sizing: inherit;
-    word-break: break-all;
 }
 
 body, h1, h2, h3, h4, h5, h6, p, ol, ul {
@@ -69,7 +68,7 @@ header .icon:hover {
     display: flex;
 }
 
-#left-menu .project-input > div:nth-child(2) {
+#left-menu .project-input > div:last-child {
     display: grid;
     gap: 5px;
     grid-auto-flow: column;
@@ -88,6 +87,12 @@ header .icon:hover {
 
 .project-input label {
     flex-shrink: 0;
+}
+
+.project-input .err-message {
+    margin-top: 6px;
+    color: rgb(150, 0, 0);
+    font-size: .8rem;
 }
 
 #left-menu > div{
@@ -279,13 +284,18 @@ button:hover {
 }
 
 .task {
+    margin-bottom: 24px;
+    padding: 6px 0;
+    font-size: .9rem;
+}
+
+.task .preview {
     display: grid;
     grid-template-columns: auto 1fr auto;
-    margin-bottom: 24px;
+    border-bottom: 1px solid var(--borders-color);
+    margin-bottom: 8px;
     column-gap: 8px;
     row-gap: 5px;
-    padding: 4px 0;
-    border-bottom: 1px solid var(--borders-color);
 }
 
 .task.completed {
@@ -302,7 +312,7 @@ button:hover {
     gap: 5px;
 }
 
-.task > div:first-child, .task > .icons-container {
+.task .preview > div:first-child, .task .preview > .icons-container {
     grid-row-end: span 3;
     align-self: start;
 }
@@ -338,6 +348,29 @@ button:hover {
     color: var(--light-text);
 }
 
+.task .details {
+    display: none;
+    padding: 14px;
+    border: 1px solid var(--borders-color);
+    border-radius: 5px;
+}
+
+.task .details.active {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+.task .details > div {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.task .details > div span:first-child {
+    margin-right: 10px;
+    font-weight: bold;
+}
+
 input[type="checkbox"] {
     appearance: none;
     background-color: #fff;
@@ -363,42 +396,6 @@ input[type="checkbox"]::before {
 input[type="checkbox"]:checked::before {
     transform: scale(1);
     transition: 120ms transform ease-in-out;
-}
-
-.details {
-    position: relative;
-}
-
-.details .section span {
-    font-weight: bold;;
-    margin: 10px 0;
-}
-
-.details .section {
-    margin-bottom: 25px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    column-gap: 20px;
-    border-bottom: 1px solid var(--borders-color);
-}
-
-.details .section:last-child {
-    margin: 0;
-    border: none;
-}
-
-.details .close-modal-btn {
-    font-weight: bold;
-    margin: -10px -10px 0 0;
-    position: absolute;
-    right: 0;
-    top: 0;
-    font-size: 1.2rem;
-}
-
-.details .close-modal-btn:hover {
-    cursor: pointer;
 }
 
 .modal {
@@ -467,6 +464,10 @@ input[type="checkbox"]:checked::before {
 }
 
 @media screen and (max-width: 600px) {
+    html {
+        font-size: 14px;
+    }
+
     .task-input label {
         grid-column-end: span 2;
     }
@@ -476,6 +477,10 @@ input[type="checkbox"]:checked::before {
     }
 
     .details-content {
+        grid-template-columns: 1fr;
+    }
+
+    .task .details.active {
         grid-template-columns: 1fr;
     }
 }

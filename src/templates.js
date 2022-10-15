@@ -2,7 +2,6 @@ import { format } from 'date-fns';
 import { html, nothing } from 'lit-html';
 import { createRef, ref } from 'lit-html/directives/ref.js';
 import { live } from 'lit-html/directives/live.js';
-import { cache } from 'lit-html/directives/cache.js';
 import { events } from './events';
 
 const editIcon = html`
@@ -125,6 +124,7 @@ function taskInputTemplate({
                 <button type="button"
                     @click=${() => {
                         let inputValues = getInputValues();
+                        if(!refs.title.value.value) return;
                         clearInput()
                         submitionHandler(inputValues)
                     }}>
@@ -146,7 +146,7 @@ function taskInputTemplate({
             <div class="task-input">
 
                 <label class="title">
-                    Title:
+                    Title (required)
                     <input ${ref(refs.title)} type="text" class="title"
                     .value=${defaultValues ? live(defaultValues.title) : ''}>
                 </label>
@@ -196,7 +196,6 @@ function taskInputTemplate({
 export function modalContentTemplate({
     task = null,
     editTask = false,
-    newTask = false,
     projects,
 }) {
 
@@ -237,38 +236,18 @@ export function modalContentTemplate({
             </div>`
     }
 
-    function detailView() {
-        return html `
-            <div class="details">
-                <div class="details-content">
-                    <div class="section">
-                        <span>Title: </span>
-                        <div>${task.title}</div>
-                    </div>
-                    <div class="section">
-                        <span>Description: </span>
-                        <div class="description">${task.description ? task.description : 'No description'}</div>
-                    </div>
-                    <div class="section">
-                        <span>Due Date: </span>
-                        <div>${task.dueDate ? format(new Date(task.dueDate), 'MMM do Y') : 'No due Date'}</div>
-                    </div>
-                    <div class="section">
-                        <span>Priority: </span>
-                        <div>${task.priority}</div>
-                    </div>
-                </div>
-                <span @click=${closeModalHandler} class="close-modal-btn">x</span>
-            </div>`
-    }
-
-    return html`${cache(editTask ? editView() : newTask ? newTaskView() : detailView())}`
+    return html`${editTask ? editView() : newTaskView()}`
 }
 
 function taskTemplate(task) {
 
     let taskRef = createRef();
     let checkboxRef = createRef();
+    let detailsRef = createRef();
+
+    function toggleDetails() {
+        detailsRef.value.classList.toggle('active')
+    }
 
     function checkboxHandler(e) {
         e.stopPropagation()
@@ -284,9 +263,9 @@ function taskTemplate(task) {
     }
 
     return html`
-        <li .className=${`task ${task.priority ? task.priority : nothing} ${task.completed ? 'completed' : ''}`}
-        ${ref(taskRef)}
-        @click=${() => events.emit('triggerModal', {task, edit: false})}>
+        <li ${ref(taskRef)}
+        .className=${`task ${task.priority ? task.priority : nothing} ${task.completed ? 'completed' : ''}`}>
+        <div class="preview" @click=${toggleDetails}>
             <div>
                 <input type="checkbox" value="completed"
                 class="task-checkbox" ${ref(checkboxRef)}
@@ -305,7 +284,38 @@ function taskTemplate(task) {
                     }}>${deleteIcon}</span>
                 <span class="flag">${flagIcon}</span>
             </div>
-            <div class="due-date">${task.dueDate ? format(new Date(task.dueDate.replaceAll('-', '/')), 'MMM do Y') : nothing}
+            <div class="due-date">
+                ${task.dueDate ? format(new Date(task.dueDate.replaceAll('-', '/')), 'MMM do Y') : nothing}
+            </div>
+        </div>
+        <div ${ref(detailsRef)} .className=${live('details')}>
+            <div>
+                <p>
+                    <span>Title:</span>
+                    <span>${task.title}</span>
+                </p>
+            </div>
+            <div>
+                <p>
+                    <span>Description:</span>
+                    <span>${task.description ? task.description : '-'}</span>
+                </p>
+            </div>
+            <div>
+                <p>
+                    <span>Due Date:</span>
+                    <span>${task.dueDate
+                        ? format(new Date(task.dueDate.replaceAll('-', '/')), 'MMM do Y')
+                        : '-'}</span>
+                </p>
+            </div>
+            <div>
+                <p>
+                    <span>Priority:</span>
+                    <span>${task.priority}</span>
+                </p>
+            </div>
+        </div>
         </li>
     `
 }
@@ -337,6 +347,7 @@ export function leftMenuTemplate(projects) {
 
     const inputRef = createRef();
     const titleRef = createRef();
+    const errMsgRef = createRef();
     function projectInput() {
 
         return html`
@@ -345,14 +356,26 @@ export function leftMenuTemplate(projects) {
                     <label>Title</label>
                     <input ${ref(titleRef)} type="text">
                 </div>
+                <div ${ref(errMsgRef)} class="err-message hidden">There is already a project with that title</div>
                 <div>
                     <button @click=${() => {
+                        if(projects.findProject(titleRef.value.value)) {
+                            errMsgRef.value.classList.remove('hidden')
+                            return
+                        } else if(!titleRef.value.value) return
+                        errMsgRef.value.classList.add('hidden')
                         inputRef.value.classList.add('hidden')
-                        events.emit('createProject', {title: titleRef.value.value})
+                        let title = titleRef.value.value;
+                        titleRef.value.value = '';
+                        events.emit('createProject', {title})
                     }} type="button">
                         Create Project
                     </button>
-                    <button @click=${() => inputRef.value.classList.add('hidden')}>
+                    <button @click=${() => {
+                        errMsgRef.value.classList.add('hidden')
+                        inputRef.value.classList.add('hidden')
+                        titleRef.value.value = '';
+                    }}>
                         Cancel
                     </button>
                 </div>
