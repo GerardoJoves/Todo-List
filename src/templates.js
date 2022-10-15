@@ -5,31 +5,31 @@ import { live } from 'lit-html/directives/live.js';
 import { events } from './events';
 
 const editIcon = html`
-<svg style="width:20px;height:20px" viewBox="0 0 24 24">
+<svg viewBox="0 0 24 24" class="edit icon">
     <path fill="currentColor" d="M16.84,2.73C16.45,2.73 16.07,2.88 15.77,3.17L13.65,5.29L18.95,10.6L21.07,8.5C21.67,7.89 21.67,6.94 21.07,6.36L17.9,3.17C17.6,2.88 17.22,2.73 16.84,2.73M12.94,6L4.84,14.11L7.4,14.39L7.58,16.68L9.86,16.85L10.15,19.41L18.25,11.3M4.25,15.04L2.5,21.73L9.2,19.94L8.96,17.78L6.65,17.61L6.47,15.29" />
 </svg>`;
 const deleteIcon = html`
-<svg style="width:20px;height:20px" viewBox="0 0 24 24">
+<svg viewBox="0 0 24 24" class="delete icon">
     <path fill="currentColor" d="M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M8,9H16V19H8V9M15.5,4L14.5,3H9.5L8.5,4H5V6H19V4H15.5Z" />
 </svg>`
 const flagIcon = html`
-<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+<svg viewBox="0 0 24 24" class="flag icon">
     <path fill="currentColor" d="M14.4,6L14,4H5V21H7V14H12.6L13,16H20V6H14.4Z" />
 </svg>`
 const inboxIcon = html`
-<svg style="width:20px;height:20px" viewBox="0 0 24 24">
+<svg viewBox="0 0 24 24" class="icon">
     <path fill="currentColor" d="M19,15H15A3,3 0 0,1 12,18A3,3 0 0,1 9,15H5V5H19M19,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3Z" />
 </svg>`
 const addProjectIcon = html`
-<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+<svg viewBox="0 0 24 24" class="icon">
     <path fill="currentColor" d="M13 19C13 19.34 13.04 19.67 13.09 20H4C2.9 20 2 19.11 2 18V6C2 4.89 2.89 4 4 4H10L12 6H20C21.1 6 22 6.89 22 8V13.81C21.39 13.46 20.72 13.22 20 13.09V8H4V18H13.09C13.04 18.33 13 18.66 13 19M20 18V15H18V18H15V20H18V23H20V20H23V18H20Z" />
 </svg>`
 const circleIcon = html`
-<svg style="width:10px;height:10px" viewBox="0 0 24 24" class="circle-icon">
+<svg viewBox="0 0 24 24" class="circle icon">
     <path fill="currentColor" d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z" />
 </svg>`
 const plusIcon = html`
-<svg style="width:24px;height:24px" viewBox="0 0 24 24">
+<svg viewBox="0 0 24 24" class="icon">
     <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
 </svg>`
 
