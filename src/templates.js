@@ -262,9 +262,10 @@ function taskTemplate(task) {
         events.emit('updateLocalStorage')
     }
 
+    let taskClass = `task ${task.priority ? task.priority : ''} ${task.completed ? 'completed' : ''}`
     return html`
         <li ${ref(taskRef)}
-        .className=${`task ${task.priority ? task.priority : nothing} ${task.completed ? 'completed' : ''}`}>
+        class=${live(taskClass)}>
         <div class="preview" @click=${toggleDetails}>
             <div>
                 <input type="checkbox" value="completed"

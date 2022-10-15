@@ -96,7 +96,6 @@ if(storageAvailable('localStorage')) {
 
     events.on('updateLocalStorage', () => {
         localStorage.setItem('projects', JSON.stringify(projects.list))
-        console.log(JSON.stringify(projects.list))
     })
 
     if(storedProjects) {
@@ -161,7 +160,6 @@ events.on('triggerModal', ({task = null, editTask = false, newTask = false}) => 
 })
 
 events.on('editTask', ({task, newValues}) => {
-    console.log(newValues.dueDate)
     if(newValues.ownerProject != projects.currentOnDisplay.title) {
         projects.findProject(task.ownerProject).removeTask(task)
         projects.findProject(newValues.ownerProject).addTask(task)

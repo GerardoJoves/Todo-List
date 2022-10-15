@@ -140,6 +140,11 @@ header .icon:hover {
     gap: 10px;
 }
 
+.projects-container.custom {
+    height: calc(100vh - 210px);
+    overflow: scroll;
+}
+
 #left-menu .projects-container > div > span:last-child {
     min-width: 40px;
     text-align: right;
